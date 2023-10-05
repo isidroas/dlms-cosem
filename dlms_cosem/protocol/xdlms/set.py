@@ -167,6 +167,12 @@ class SetRequestWithFirstBlock:
             )
 
         block_number = int.from_bytes(data[:4], "big")
+        if block_number !=1:
+            raise ValueError(
+                "block_number should be 1 in a SetRequestWithFirstBlock. "
+                f"Instead received {block_number}"
+            )
+
         data = data[4:]
 
         data_length, data = decode_variable_integer(data)
@@ -193,6 +199,9 @@ class SetRequestWithFirstBlock:
             out.extend(self.access_selection.to_bytes())
         else:
             out.extend(b"\x00")
+        out.append(0) # last_block
+        out.extend(b'\x00\x00\x00\x01') # block number
+        out.extend(encode_variable_integer(len(self.data)))
         out.extend(self.data)
         return bytes(out)
 

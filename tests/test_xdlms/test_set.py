@@ -144,5 +144,5 @@ class TestSetRequestWithFirstBlock:
                 invoke_id=1, confirmed=True, high_priority=True
             ),
         )
-        #assert data == request.to_bytes()
+        assert data == request.to_bytes()
         assert request == xdlms.SetRequestWithFirstBlock.from_bytes(data)
