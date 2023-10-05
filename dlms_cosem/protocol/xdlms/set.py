@@ -6,6 +6,10 @@ from dlms_cosem import cosem
 from dlms_cosem import enumerations as enums
 from dlms_cosem.protocol.xdlms.base import AbstractXDlmsApdu
 from dlms_cosem.protocol.xdlms.invoke_id_and_priority import InvokeIdAndPriority
+from dlms_cosem.dlms_data import (
+    decode_variable_integer,
+    encode_variable_integer,
+)
 
 """
 Set-Request ::= CHOICE
@@ -118,7 +122,79 @@ class SetRequestWithFirstBlock:
     }
     """
 
-    ...
+    TAG: ClassVar[int] = 193
+    RESPONSE_TYPE: ClassVar[enums.SetRequestType] = enums.SetRequestType.WITH_FIRST_BLOCK
+    cosem_attribute: cosem.CosemAttribute = attr.ib(
+        validator=attr.validators.instance_of(cosem.CosemAttribute)
+    )
+    data: bytes = attr.ib(validator=attr.validators.instance_of(bytes))
+    access_selection: Optional[Any] = attr.ib(default=None)
+    invoke_id_and_priority: InvokeIdAndPriority = attr.ib(
+        factory=InvokeIdAndPriority,
+        validator=attr.validators.instance_of(InvokeIdAndPriority),
+    )
+
+    @classmethod
+    def from_bytes(cls, source_bytes: bytes):
+        data = bytearray(source_bytes)
+        tag = data.pop(0)
+        if tag != cls.TAG:
+            raise ValueError(
+                f"Tag for SetRequest is not correct. Got {tag}, should be {cls.TAG}"
+            )
+
+        type_choice = enums.SetRequestType(data.pop(0))
+        if type_choice is not enums.SetRequestType.WITH_FIRST_BLOCK:
+            raise ValueError("The type of the SetRequest is not for a SetRequestWithFirstBlock")
+
+        invoke_id_and_priority = InvokeIdAndPriority.from_bytes(
+            data.pop(0).to_bytes(1, "big")
+        )
+        cosem_attribute = cosem.CosemAttribute.from_bytes(data[:9])
+        data = data[9:]
+
+        has_access_selection = bool(data.pop(0))
+        if has_access_selection:
+            raise NotImplementedError("Selective access on SET is not implemented")
+        else:
+            access_selection = None
+
+        last_block = bool(data.pop(0))
+        if last_block:
+            raise ValueError(
+                f"Last block set to true in a SetRequestWithFirstBlock. Should only be set "
+                f"for a SetRequestWithBlock"
+            )
+
+        block_number = int.from_bytes(data[:4], "big")
+        data = data[4:]
+
+        data_length, data = decode_variable_integer(data)
+        if data_length != len(data):
+            raise ValueError(
+                "The octet string in block data is not of the correct length"
+            )
+
+        return cls(
+            cosem_attribute=cosem_attribute,
+            data=bytes(data),
+            access_selection=access_selection,
+            invoke_id_and_priority=invoke_id_and_priority,
+        )
+
+    def to_bytes(self) -> bytes:
+        out = bytearray()
+        out.append(self.TAG)
+        out.append(self.RESPONSE_TYPE.value)
+        out.extend(self.invoke_id_and_priority.to_bytes())
+        out.extend(self.cosem_attribute.to_bytes())
+        if self.access_selection:
+            out.extend(b"\x01")
+            out.extend(self.access_selection.to_bytes())
+        else:
+            out.extend(b"\x00")
+        out.extend(self.data)
+        return bytes(out)
 
 
 @attr.s(auto_attribs=True)

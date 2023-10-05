@@ -119,3 +119,30 @@ class TestSetResponseFactory:
         data = b"\xc5\x05\xc1\x00"
         with pytest.raises(NotImplementedError):
             xdlms.SetResponseFactory.from_bytes(data)
+
+class TestSetRequestWithFirstBlock:
+    def test_transform_bytes(self):
+        data = bytes.fromhex(
+            "C102C1"
+            "00010000800000FF0200"
+            "00"
+            "00000001"
+            "15"
+            "09320102030405060708091011121314"
+            "1516171819"
+            )
+
+        request = xdlms.SetRequestWithFirstBlock(
+            cosem_attribute=cosem.CosemAttribute(
+                interface=enumerations.CosemInterface.DATA,
+                instance=cosem.Obis(a=0, b=0, c=128, d=0, e=0, f=255),
+                attribute=2,
+            ),
+            data=bytes.fromhex("093201020304050607080910111213141516171819"),
+            access_selection=None,
+            invoke_id_and_priority=xdlms.InvokeIdAndPriority(
+                invoke_id=1, confirmed=True, high_priority=True
+            ),
+        )
+        #assert data == request.to_bytes()
+        assert request == xdlms.SetRequestWithFirstBlock.from_bytes(data)
