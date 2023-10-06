@@ -40,6 +40,7 @@ from dlms_cosem.protocol.xdlms.set import (
     SetResponseFactory,
     SetResponseNormal,
     SetResponseWithBlock,
+    SetResponseLastBlock,
 )
 
 __all__ = [
@@ -62,6 +63,7 @@ __all__ = [
     "GetResponseFactory",
     "SetResponseNormal",
     "SetResponseWithBlock",
+    "SetResponseLastBlock",
     "SetResponseFactory",
     "SetRequestNormal",
     "SetRequestFactory",
