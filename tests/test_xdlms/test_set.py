@@ -146,3 +146,20 @@ class TestSetRequestWithFirstBlock:
         )
         assert data == request.to_bytes()
         assert request == xdlms.SetRequestWithFirstBlock.from_bytes(data)
+
+class TestSetResponseWithBlock:
+    def test_transform_bytes(self):
+        data = bytes.fromhex(
+                "C502C1"
+                "00000001"
+        )
+
+        response = xdlms.SetResponseWithBlock(
+            result=enumerations.DataAccessResult.SUCCESS,
+            invoke_id_and_priority=xdlms.InvokeIdAndPriority(
+                invoke_id=1, confirmed=True, high_priority=True
+            ),
+            block_number=1,
+        )
+        assert data == response.to_bytes()
+        assert response == xdlms.SetResponseWithBlock.from_bytes(data)
