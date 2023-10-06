@@ -155,7 +155,6 @@ class TestSetResponseWithBlock:
         )
 
         response = xdlms.SetResponseWithBlock(
-            result=enumerations.DataAccessResult.SUCCESS,
             invoke_id_and_priority=xdlms.InvokeIdAndPriority(
                 invoke_id=1, confirmed=True, high_priority=True
             ),

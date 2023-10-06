@@ -363,7 +363,44 @@ class SetResponseWithBlock:
     }
     """
 
-    ...
+    TAG: ClassVar[int] = 197
+    RESPONSE_TYPE: ClassVar[enums.SetResponseType] = enums.SetResponseType.WITH_BLOCK
+    invoke_id_and_priority: InvokeIdAndPriority = attr.ib(
+        factory=InvokeIdAndPriority,
+        validator=attr.validators.instance_of(InvokeIdAndPriority),
+    )
+    block_number: int = attr.ib(validator=attr.validators.instance_of(int), default=0)
+
+    @classmethod
+    def from_bytes(cls, source_bytes: bytes):
+        data = bytearray(source_bytes)
+        tag = data.pop(0)
+        if tag != cls.TAG:
+            raise ValueError(
+                f"Tag for SetResponse is not correct. Got {tag}, should be {cls.TAG}"
+            )
+
+        type_choice = enums.SetResponseType(data.pop(0))
+        if type_choice is not enums.SetResponseType.WITH_BLOCK:
+            raise ValueError(
+                "The type of the SetResponse is not for a SetResponseWithBlock"
+            )
+
+        invoke_id_and_priority = InvokeIdAndPriority.from_bytes(
+            data.pop(0).to_bytes(1, "big")
+        )
+
+        block_number = int.from_bytes(data[:4], "big")
+
+        return cls(invoke_id_and_priority=invoke_id_and_priority, block_number=block_number)
+
+    def to_bytes(self) -> bytes:
+        out = bytearray()
+        out.append(self.TAG)
+        out.append(self.RESPONSE_TYPE.value)
+        out.extend(self.invoke_id_and_priority.to_bytes())
+        out.extend(self.block_number.to_bytes(4, 'big'))
+        return bytes(out)
 
 
 @attr.s(auto_attribs=True)
