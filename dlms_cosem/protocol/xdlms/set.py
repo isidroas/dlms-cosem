@@ -506,5 +506,9 @@ class SetResponseFactory:
         request_type = enums.SetResponseType(data.pop(0))
         if request_type == enums.SetResponseType.NORMAL:
             return SetResponseNormal.from_bytes(source_bytes)
+        elif request_type == enums.SetResponseType.WITH_BLOCK:
+            return SetResponseWithBlock.from_bytes(source_bytes)
+        elif request_type == enums.SetResponseType.WITH_LAST_BLOCK:
+            return SetResponseLastBlock.from_bytes(source_bytes)
         else:
-            raise NotImplementedError("Only SetResponseNormal implemented")
+            raise NotImplementedError(f"not implemented {request_type}")
