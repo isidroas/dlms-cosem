@@ -194,6 +194,11 @@ class DlmsConnection:
         )
     )
 
+    # The user_information field that was carried in AARQ
+    # For internal use only. If you want to change the proposed parameters,
+    # see conformance and max_pdu_size arguments
+    initiate_request: Optional[xdlms.InitiateRequest] = attr.ib(default=None)
+
     @classmethod
     def with_pre_established_association(
         cls,
@@ -489,6 +494,16 @@ class DlmsConnection:
         if isinstance(
             event, (acse.ApplicationAssociationResponse, acse.ReleaseResponse)
         ):
+            """
+            TODO: When RLRE check that it contains the same protected InitiateResponse that in AARE
+
+            From "DLMS UA 1000-2 Ed. 10 - 9.3.3 The COSEM-RELEASE service":
+                If the xDLMS InitiateRequest APDU can be successfully deciphered, then the .response primitive shall
+                carry the same Negotiated_xDLMS_Context parameter as in the COSEM -OPEN.response primitive. It
+                is carried by the xDLMS InitiateResponse APDU, protected the same way as in the AARE and placed
+                in the user-information field of the RLRE APDU.
+            """
+
             if event.user_information:
                 if isinstance(
                     event.user_information.content,
@@ -540,6 +555,9 @@ class DlmsConnection:
             client_max_receive_pdu_size=self.max_pdu_size,
         )
 
+        # later used for release request
+        self.initiate_request = initiate_request
+
         return acse.ApplicationAssociationRequest(
             ciphered=ciphered_apdus,
             system_title=self.client_system_title,
@@ -552,14 +570,21 @@ class DlmsConnection:
         """
         Returns a ReleaseRequestApdu to release the current association.
         """
-        initiate_request = xdlms.InitiateRequest(
-            proposed_conformance=self.conformance,
-            client_max_receive_pdu_size=self.max_pdu_size,
-        )
+
+        """
+        From DLMS UA 1000-2 Ed. 10 - 9.3.3 The COSEM-RELEASE service
+            The Proposed_xDLMS_Context parameter is conditional. It is present only if the value of the
+            Use_RLRQ_RLRE is TRUE and the AA to be released has been established with an application context
+            using ciphering. This option allows securing the COSEM-RELEASE service, and avoiding thereby a
+            denial-of-service attack that may be carried out by unauthorized releasing of the AA.
+        """
+        user_information=None
+        if self.use_protection:
+            user_information=acse.UserInformation(content=self.initiate_request)
 
         return acse.ReleaseRequest(
             reason=enums.ReleaseRequestReason.NORMAL,
-            user_information=acse.UserInformation(content=initiate_request),
+            user_information=user_information
         )
 
     def update_negotiated_parameters(
