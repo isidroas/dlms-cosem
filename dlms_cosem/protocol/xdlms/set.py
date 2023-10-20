@@ -104,7 +104,7 @@ class SetRequestNormal(AbstractXDlmsApdu):
 
 
 @attr.s(auto_attribs=True)
-class SetRequestWithFirstBlock:
+class SetRequestWithFirstBlock(AbstractXDlmsApdu):
     """
     Set-Request-With-First-Datablock ::= SEQUENCE
     {
@@ -207,7 +207,7 @@ class SetRequestWithFirstBlock:
 
 
 @attr.s(auto_attribs=True)
-class SetRequestWithBlock:
+class SetRequestWithBlock(AbstractXDlmsApdu):
     """
     Set-Request-With-Datablock ::= SEQUENCE
     {
@@ -227,7 +227,7 @@ class SetRequestWithBlock:
 
 
 @attr.s(auto_attribs=True)
-class SetRequestWithList:
+class SetRequestWithList(AbstractXDlmsApdu):
     """
     Set-Request-With-List ::= SEQUENCE
     {
@@ -247,7 +247,7 @@ class SetRequestWithList:
 
 
 @attr.s(auto_attribs=True)
-class SetRequestWithListFirstBlock:
+class SetRequestWithListFirstBlock(AbstractXDlmsApdu):
     """
     Set-Request-With-List-And-First-Datablock ::= SEQUENCE
     {
