@@ -296,9 +296,10 @@ class SetRequestFactory:
             return SetRequestNormal.from_bytes(source_bytes)
         elif request_type == enums.SetRequestType.WITH_FIRST_BLOCK:
             return SetRequestWithFirstBlock.from_bytes(source_bytes)
-
+        elif request_type == enums.SetRequestType.WITH_BLOCK:
+            return SetRequestWithBlock.from_bytes(source_bytes)
         else:
-            raise NotImplementedError("Only SetRequestNormal implemented")
+            raise NotImplementedError("Unsupported set subtype: {request_type}")
 
 
 @attr.s(auto_attribs=True)
@@ -354,7 +355,7 @@ class SetResponseNormal(AbstractXDlmsApdu):
 
 
 @attr.s(auto_attribs=True)
-class SetResponseWithBlock:
+class SetResponseWithBlock(AbstractXDlmsApdu):
     """
     Set-Response-Datablock ::= SEQUENCE
     {
@@ -404,7 +405,7 @@ class SetResponseWithBlock:
 
 
 @attr.s(auto_attribs=True)
-class SetResponseLastBlock:
+class SetResponseLastBlock(AbstractXDlmsApdu):
     """
     Set-Response-Last-Datablock ::= SEQUENCE
     {
@@ -460,7 +461,7 @@ class SetResponseLastBlock:
 
 
 @attr.s(auto_attribs=True)
-class SetResponseLastBlockWithList:
+class SetResponseLastBlockWithList(AbstractXDlmsApdu):
     """
     Set-Response-Last-Datablock-With-List ::= SEQUENCE
     {
@@ -474,7 +475,7 @@ class SetResponseLastBlockWithList:
 
 
 @attr.s(auto_attribs=True)
-class SetResponseWithList:
+class SetResponseWithList(AbstractXDlmsApdu):
     """
     Set-Response-With-List ::= SEQUENCE
     {
