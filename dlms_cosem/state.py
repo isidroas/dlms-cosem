@@ -110,6 +110,7 @@ DLMS_STATE_TRANSITIONS = {
         xdlms.GetResponseWithBlock: SHOULD_ACK_LAST_GET_BLOCK,
         xdlms.GetResponseNormalWithError: READY,
         xdlms.ExceptionResponse: READY,
+        xdlms.ConfirmedServiceError: READY,
     },
     AWAITING_GET_BLOCK_RESPONSE: {
         xdlms.GetResponseWithBlock: SHOULD_ACK_LAST_GET_BLOCK,
@@ -118,7 +119,10 @@ DLMS_STATE_TRANSITIONS = {
         xdlms.GetResponseLastBlockWithError: READY,
         xdlms.GetResponseLastBlock: READY,
     },
-    AWAITING_SET_RESPONSE: {xdlms.SetResponseNormal: READY},
+    AWAITING_SET_RESPONSE: {
+        xdlms.SetResponseNormal: READY,
+        xdlms.ConfirmedServiceError: READY,
+    },
     AWAITING_ACTION_RESPONSE: {
         xdlms.ActionResponseNormal: READY,
         xdlms.ActionResponseNormalWithData: READY,
@@ -145,7 +149,6 @@ class DlmsConnectionState:
     current_state: _SentinelBase = attr.ib(default=NO_ASSOCIATION)
 
     def process_event(self, event):
-
         self._transition_state(type(event))
 
     def _transition_state(self, event_type):
