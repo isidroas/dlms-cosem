@@ -364,6 +364,10 @@ class DlmsConnection:
                 raise exceptions.LocalDlmsProtocolError(
                     "Received a non Action response when in HLS DONE"
                 )
+
+        if isinstance(apdu, xdlms.ConfirmedServiceError):
+            raise exceptions.ConfirmedServiceError(apdu.error)
+
         return apdu
 
     def clear_buffer(self):

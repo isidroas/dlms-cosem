@@ -36,3 +36,8 @@ class DecryptionError(CryptographyError):
     because the ciphertext has changed or that the key, nonce or associated data is
     wrong
     """
+
+class ConfirmedServiceError(Exception):
+    """Service type is not supported by the peer.
+    For example, because it wasn't negotiated in conformance
+    """
