@@ -44,15 +44,3 @@ class GlobalSetResponse(ServiceSpecificCipher):
 @attr.s(auto_attribs=True)
 class GlobalActionResponse(ServiceSpecificCipher):
     TAG: ClassVar[int] = 207
-
-
-"""
-    glo-get-request                      [200]   IMPLICIT     OCTET   STRING,
-    glo-set-request                      [201]   IMPLICIT     OCTET   STRING,
-    glo-event-notification-request       [202]   IMPLICIT     OCTET   STRING,
-    glo-action-request                   [203]   IMPLICIT     OCTET   STRING,
-
-    glo-get-response                     [204] IMPLICIT       OCTET STRING,
-    glo-set-response                     [205] IMPLICIT       OCTET STRING,
-    glo-action-response                  [207] IMPLICIT       OCTET STRING,
-"""
