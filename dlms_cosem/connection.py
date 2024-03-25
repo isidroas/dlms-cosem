@@ -482,6 +482,11 @@ class DlmsConnection:
                 "Unable to encrypt plain text. Missing global_authentication_key"
             )
 
+        # If I move increment to here. The meter do strange things with authentication challenge:
+        #  It does not respond to the action request
+        #  or respond an empty (malformed) action response
+        # self.client_invocation_counter += 1
+
         invocation_counter = self.client_invocation_counter
 
         ciphered_text = security.encrypt(
@@ -493,11 +498,12 @@ class DlmsConnection:
             plain_text=plain_text,
         )
 
+        self.client_invocation_counter += 1
+
         # # updated the client_invocation_counter
         # import traceback, sys
         # print('-'*80)
         # traceback.print_stack(file=sys.stdout)
-        self.client_invocation_counter += 1
 
         return ciphered_text, invocation_counter
 

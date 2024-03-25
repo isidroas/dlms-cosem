@@ -418,7 +418,7 @@ class HighLevelSecurityGmacAuthentication:
         # should ic be incremented?
         return (
             only_auth_security_control.to_bytes()
-            + connection.client_invocation_counter.to_bytes(4, "big")
+            + (connection.client_invocation_counter + 0).to_bytes(4, "big")
             + gmac_result
         )
 
@@ -448,7 +448,11 @@ class HighLevelSecurityGmacAuthentication:
             auth_key=connection.global_authentication_key,
             challenge=self.get_calling_authentication_value(),
         )
-        return gmac_result == correct_gmac
+
+        res =gmac_result == correct_gmac
+        # if res:
+        #     connection.update_meter_invocation_counter(invocation_counter)
+        return res
 
 
 @attr.s(auto_attribs=True)
