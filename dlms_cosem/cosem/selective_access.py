@@ -39,12 +39,13 @@ class RangeDescriptor:
                 f"Access descriptor {access_descriptor} is not valid for "
                 f"RangeDescriptor. It should be {cls.ACCESS_DESCRIPTOR}"
             )
-        parsed_data = utils.parse_as_dlms_data(data)
 
-        restricting_object_data = parsed_data[0]
-        from_value_data = parsed_data[1]
-        to_value_data = parsed_data[2]
-        selected_values_data = parsed_data[3]
+        parsed_data = dlms_data.DlmsDataParser().parse(data, limit=5000)[0].value
+
+        restricting_object_data = parsed_data[0].to_python()
+        from_value = parsed_data[1]
+        to_value = parsed_data[2]
+        selected_values_data = parsed_data[3].to_python()
 
         restricting_cosem_attribute = cosem.CosemAttribute(
             interface=enumerations.CosemInterface(restricting_object_data[0]),
@@ -55,8 +56,11 @@ class RangeDescriptor:
             cosem_attribute=restricting_cosem_attribute,
             data_index=restricting_object_data[3],
         )
-        from_dt, clock_status = time.datetime_from_bytes(from_value_data)
-        to_dt, clock_status = time.datetime_from_bytes(to_value_data)
+        if isinstance(from_value, dlms_data.OctetStringData):
+            # It won't be always true, but almost
+            from_value, clock_status = time.datetime_from_bytes(from_value.value)
+        if isinstance(to_value, dlms_data.OctetStringData):
+            to_value, clock_status = time.datetime_from_bytes(to_value.value)
         if selected_values_data:
             raise NotImplementedError()
         else:
@@ -64,8 +68,8 @@ class RangeDescriptor:
 
         return cls(
             restricting_object=restricting_object,
-            from_value=from_dt,
-            to_value=to_dt,
+            from_value=from_value,
+            to_value=to_value,
             selected_values=selected_values,
         )
 
