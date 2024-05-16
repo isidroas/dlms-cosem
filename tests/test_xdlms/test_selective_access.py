@@ -3,6 +3,8 @@ from dateutil import parser
 from dlms_cosem import cosem, enumerations
 from dlms_cosem.cosem import selective_access
 from dlms_cosem.cosem.selective_access import RangeDescriptor
+from dlms_cosem.cosem.capture_object import CaptureObject
+from dlms_cosem.cosem import CosemAttribute, Obis
 from dlms_cosem.protocol.xdlms import GetRequestFactory
 
 
@@ -76,6 +78,49 @@ def test_range_descriptor_to_bytes():
         to_value=parser.parse("2020-01-06T00:03:00+01:00"),
     )
     data = b"\x01\x02\x04\x02\x04\x12\x00\x08\t\x06\x00\x00\x01\x00\x00\xff\x0f\x02\x12\x00\x00\t\x0c\x07\xe4\x01\x01\xff\x00\x03\x00\x00\xff\x88\xff\t\x0c\x07\xe4\x01\x06\xff\x00\x03\x00\x00\xff\xc4\xff\x01\x00"
+    assert rd.to_bytes() == data
+
+
+def test_range_descriptor_to_bytes_with_selected_values():
+    rd = RangeDescriptor(
+        restricting_object=selective_access.CaptureObject(
+            cosem_attribute=cosem.CosemAttribute(
+                interface=enumerations.CosemInterface.CLOCK,
+                instance=cosem.Obis(0, 0, 1, 0, 0, 255),
+                attribute=2,
+            ),
+            data_index=0,
+        ),
+        from_value=parser.parse("2020-01-01T00:03:00+02:00"),
+        to_value=parser.parse("2020-01-06T00:03:00+01:00"),
+        selected_values=[
+            CaptureObject(
+                cosem_attribute=CosemAttribute(
+                    interface=1,
+                    instance=Obis(a=0, b=0, c=96, d=17, e=4, f=255),
+                    attribute=2,
+                ),
+                data_index=0,
+            ),
+            CaptureObject(
+                cosem_attribute=CosemAttribute(
+                    interface=1,
+                    instance=Obis(a=0, b=0, c=96, d=11, e=0, f=255),
+                    attribute=2,
+                ),
+                data_index=0,
+            ),
+        ],
+    )
+
+    # the same as test_range_descriptor_to_bytes but removing 2 trailing bytes
+    data = b"\x01\x02\x04\x02\x04\x12\x00\x08\t\x06\x00\x00\x01\x00\x00\xff\x0f\x02\x12\x00\x00\t\x0c\x07\xe4\x01\x01\xff\x00\x03\x00\x00\xff\x88\xff\t\x0c\x07\xe4\x01\x06\xff\x00\x03\x00\x00\xff\xc4\xff"
+
+    data+=bytes.fromhex(
+        "0102" +
+        "0204 120001 09060000601104FF 0F02 120000" +
+        "0204 120001 09060000600B00FF 0F02 120000"
+    )
     assert rd.to_bytes() == data
 
 

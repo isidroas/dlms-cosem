@@ -81,8 +81,8 @@ class RangeDescriptor:
         if not self.selected_values:
             out.extend(b"\x01\x00")  # empty array for selected values means all columns
         else:
-            raise NotImplementedError()
-            # TODO: implement selected values
+            array = dlms_data.DataArray(self.selected_values)
+            out.extend(array.to_bytes())
 
         return bytes(out)
 
