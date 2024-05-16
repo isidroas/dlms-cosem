@@ -558,7 +558,7 @@ class DlmsDataParser:
 def decode_variable_integer(bytes_input: bytes):
     """
     If the length is fitting in 7 bits it can be encoded in 1 bytes.
-    If it is larger then 7 bybitstes the last bit of the first byte indicates
+    If it is larger than 7 bits, the last bit of the first byte indicates
     that the length of the lenght is encoded in the first byte and the length
     is encoded in the following bytes.
     Ex. 0b00000010 -> Length = 2
