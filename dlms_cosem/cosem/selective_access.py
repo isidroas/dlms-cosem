@@ -22,8 +22,12 @@ class RangeDescriptor:
     restricting_object: CaptureObject = attr.ib(
         validator=attr.validators.instance_of(CaptureObject)
     )
-    from_value: datetime = attr.ib(validator=attr.validators.instance_of(datetime))
-    to_value: datetime = attr.ib(validator=attr.validators.instance_of(datetime))
+    from_value: datetime | dlms_data.AbstractDlmsData = attr.ib(
+        validator=attr.validators.instance_of((datetime, dlms_data.AbstractDlmsData))
+    )
+    to_value: datetime | dlms_data.AbstractDlmsData = attr.ib(
+        validator=attr.validators.instance_of((datetime, dlms_data.AbstractDlmsData))
+    )
     selected_values: Optional[List[CaptureObject]] = attr.ib(default=None)
 
     @classmethod
@@ -70,14 +74,18 @@ class RangeDescriptor:
         out.append(self.ACCESS_DESCRIPTOR)
         out.extend(b"\x02\x04")  # structure of 4 elements
         out.extend(self.restricting_object.to_bytes())
-        out.extend(
-            dlms_data.OctetStringData(
+        from_value = self.from_value
+        if isinstance(self.from_value, datetime):
+            from_value= dlms_data.OctetStringData(
                 time.datetime_to_bytes(self.from_value)
-            ).to_bytes()
-        )
-        out.extend(
-            dlms_data.OctetStringData(time.datetime_to_bytes(self.to_value)).to_bytes()
-        )
+            )
+        out.extend(from_value.to_bytes())
+        to_value = self.to_value
+        if isinstance(self.to_value, datetime):
+            to_value= dlms_data.OctetStringData(
+                time.datetime_to_bytes(self.to_value)
+            )
+        out.extend(to_value.to_bytes())
         if not self.selected_values:
             out.extend(b"\x01\x00")  # empty array for selected values means all columns
         else:
