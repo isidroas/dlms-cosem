@@ -242,7 +242,9 @@ def utc_offset_minutes(offset_minutes: Optional[int]) -> Optional[tzoffset]:
 
     """
     if offset_minutes:
-        return tzoffset(name=None, offset=-(offset_minutes * 60))
+        offset_minutes*=-1
+        from datetime import timezone, timedelta
+        return timezone(offset=timedelta(minutes=offset_minutes))
     else:
         return None
 
